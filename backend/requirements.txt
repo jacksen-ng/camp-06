@@ -4,3 +4,9 @@ uvicorn
 google-generativeai
 pydantic
 python-dotenv
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]
+bcrypt==3.2.0
+python-jose[cryptography]
+pydantic[email]
