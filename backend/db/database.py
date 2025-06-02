@@ -9,3 +9,11 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+def get_db(): #　データベースのセッションを取得するための依存関係
+    from fastapi import Depends
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
