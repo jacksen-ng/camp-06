@@ -1,36 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import RecipeForm from "@/app/recipes/components/RecipeForm";
 
 export default function RecipesPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState("");
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    // 检查登录状态
-    const loggedIn = localStorage.getItem("isLoggedIn");
-    const storedUsername = localStorage.getItem("username");
-    
-    if (loggedIn === "true" && storedUsername) {
-      setIsLoggedIn(true);
-      setUsername(storedUsername);
-    } else {
+    // 如果未登录，重定向到登录页面
+    if (status === "unauthenticated") {
       router.push("/login");
     }
-    setLoading(false);
-  }, [router]);
+  }, [status, router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("username");
-    router.push("/");
-  };
-
-  if (loading) {
+  // 显示加载状态
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl">読み込み中...</div>
@@ -38,9 +25,14 @@ export default function RecipesPage() {
     );
   }
 
-  if (!isLoggedIn) {
-    return null; // この場合はuseEffectによってリダイレクトされる
+  // 如果未登录，显示空页面（会被重定向）
+  if (!session) {
+    return null;
   }
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,7 +45,7 @@ export default function RecipesPage() {
             </h1>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-700">
-                ようこそ、{username}さん
+                ようこそ、{session.user?.name}さん
               </span>
               <button
                 onClick={handleLogout}
