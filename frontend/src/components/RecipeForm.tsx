@@ -45,11 +45,11 @@ export default function RecipeForm() {
             }
           }}
           placeholder="食材を入力 (例: トマト, 鶏肉)"
-          className="border p-2 flex-1 rounded"
+          className="border border-gray-300 p-2 flex-1 rounded text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         />
         <button
           onClick={handleAddIngredient}
-          className="bg-green-600 text-white px-4 rounded"
+          className="bg-green-600 text-white px-4 rounded hover:bg-green-700"
         >
           追加
         </button>
@@ -65,14 +65,14 @@ export default function RecipeForm() {
         onClick={handleGenerate}
         disabled={ingredients.length === 0 || loading}
         className={`w-full py-2 rounded text-white ${
-          ingredients.length === 0 || loading ? "bg-gray-400" : "bg-blue-600"
+          ingredients.length === 0 || loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
         }`}
       >
         {loading ? "生成中..." : "レシピを生成"}
       </button>
 
       {recipe && (
-        <pre className="mt-6 whitespace-pre-wrap bg-gray-50 p-4 rounded border">
+        <pre className="mt-6 whitespace-pre-wrap bg-gray-50 p-4 rounded border text-gray-900">
           {recipe}
         </pre>
       )}
