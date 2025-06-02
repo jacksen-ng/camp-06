@@ -12,6 +12,7 @@ except (ValueError, ImportError):
 
 from db.database import Base, engine
 from routers import auth
+from routers import recipe
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,6 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(recipe.router)
 
 #ここから下別ファイルに移動させたい
 class IngredientsRequest(BaseModel):
