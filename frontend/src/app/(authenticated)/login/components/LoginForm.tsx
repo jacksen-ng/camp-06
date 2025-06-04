@@ -33,7 +33,7 @@ export default function LoginForm() {
 
         if (response.ok) {
             login(data.access_token);
-            router.push('/recipes');
+            router.push('/top-page'); // ログイン成功後のリダイレクト先
         } else {
             if (data.detail && data.detail.includes('Invalid credentials')) {
             router.push('/signup');
