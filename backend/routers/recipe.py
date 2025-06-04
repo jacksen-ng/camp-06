@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from services.recipe import get_recipes, get_recipe, create_recipe
+from services.recipe import get_recipes, get_recipe, create_recipe, delete_recipe_id
 from schemas.recipe import RecipeRead, RecipeCreate
 from db.database import get_db
 from typing import List
@@ -34,8 +34,6 @@ def read_recipes(db: Session = Depends(get_db)):
         HTTPException 500: サーバーエラー
     """
     recipes = get_recipes(db)
-    for r in recipes:
-        r.ingredients = r.ingredients.split(",")
     return recipes
 
 @router.get("/{recipe_id}", response_model=RecipeRead)
@@ -53,5 +51,12 @@ def read_recipe(recipe_id: int, db: Session = Depends(get_db)):
     recipe = get_recipe(db, recipe_id)
     if recipe is None:
         raise HTTPException(status_code=404, detail="レシピが見つかりません")
-    recipe.ingredients = recipe.ingredients.split(",")
     return recipe
+
+@router.delete("/recipes/{recipe_id}", status_code=204)
+def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
+    """
+    指定されたレシピを削除するエンドポイント。
+    """
+    delete_recipe_id(db, recipe_id)
+    return

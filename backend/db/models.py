@@ -14,3 +14,5 @@ class Recipe(Base):
     country = Column(String, nullable=False) #国名
     ingredients = Column(String, nullable=False) #材料
     instructions = Column(String, nullable=False) #作り方
+    image_url = Column(String, nullable=True)
+    image_description = Column(String, nullable=True)
