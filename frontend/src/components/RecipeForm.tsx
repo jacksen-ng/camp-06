@@ -2,10 +2,19 @@
 
 import { useState } from "react";
 
+interface RecipeResponse {
+  recipe: string;
+  image_description: string;
+  suggested_images: string[];
+  has_image: boolean;
+  image_url: string | null;
+  dish_name: string;
+}
+
 export default function RecipeForm() {
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [input, setInput] = useState("");
-  const [recipe, setRecipe] = useState<string | null>(null);
+  const [recipeData, setRecipeData] = useState<RecipeResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleAddIngredient = () => {
@@ -15,9 +24,14 @@ export default function RecipeForm() {
     }
   };
 
+  const handleRemoveIngredient = (index: number) => {
+    setIngredients(ingredients.filter((_, i) => i !== index));
+  };
+
   const handleGenerate = async () => {
     if (ingredients.length === 0) return;
     setLoading(true);
+    setRecipeData(null);
     try {
       const res = await fetch("http://localhost:8000/generate-recipe", {
         method: "POST",
@@ -25,7 +39,7 @@ export default function RecipeForm() {
         body: JSON.stringify({ ingredients }),
       });
       const data = await res.json();
-      setRecipe(data.recipe);
+      setRecipeData(data);
     } catch (err) {
       alert("レシピ生成に失敗しました");
     }
@@ -71,10 +85,86 @@ export default function RecipeForm() {
         {loading ? "生成中..." : "レシピを生成"}
       </button>
 
-      {recipe && (
-        <pre className="mt-6 whitespace-pre-wrap bg-gray-50 p-4 rounded border text-gray-900">
-          {recipe}
-        </pre>
+      {/* レシピ表示セクション */}
+      {recipeData && (
+        <div className="space-y-6">
+          {/* レシピテキスト */}
+          <div className="bg-gray-50 p-6 rounded-lg border">
+            <h3 className="text-lg font-semibold mb-3 text-gray-800">生成されたレシピ</h3>
+            <pre className="whitespace-pre-wrap text-gray-900 font-mono text-sm leading-relaxed">
+              {recipeData.recipe}
+            </pre>
+          </div>
+
+          {/* 画像説明 */}
+          <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+            <h3 className="text-lg font-semibold mb-3 text-amber-800">料理の外観</h3>
+            <p className="text-amber-900 leading-relaxed">
+              {recipeData.image_description}
+            </p>
+          </div>
+
+          {/* 実際の生成画像 */}
+          {recipeData.has_image && recipeData.image_url && (
+            <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+              <h3 className="text-lg font-semibold mb-4 text-green-800">
+                生成された料理画像: {recipeData.dish_name}
+              </h3>
+              <div className="flex justify-center">
+                <img
+                  src={recipeData.image_url}
+                  alt={`Generated image of ${recipeData.dish_name}`}
+                  className="max-w-full h-auto rounded-lg shadow-lg border-2 border-green-300"
+                  style={{ maxHeight: '400px' }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "https://via.placeholder.com/400x300/E5E7EB/9CA3AF?text=Image+Error";
+                  }}
+                />
+              </div>
+              <p className="text-sm text-green-600 mt-3 text-center">
+                ✨ AI生成による {recipeData.dish_name} の画像
+              </p>
+            </div>
+          )}
+
+          {/* プレースホルダー画像ギャラリー（実際の画像がない場合） */}
+          {!recipeData.has_image && recipeData.suggested_images && recipeData.suggested_images.length > 0 && (
+            <div className="bg-purple-50 p-6 rounded-lg border border-purple-200">
+              <h3 className="text-lg font-semibold mb-4 text-purple-800">
+                イメージ画像: {recipeData.dish_name}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {recipeData.suggested_images.map((imageUrl, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={imageUrl}
+                      alt={`Recipe image ${index + 1}`}
+                      className="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "https://via.placeholder.com/400x300/E5E7EB/9CA3AF?text=No+Image";
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-purple-600 mt-3">
+                ※ これらはプレースホルダー画像です。実際の料理の見た目とは異なる場合があります。
+              </p>
+            </div>
+          )}
+
+          {/* 画像生成に失敗した場合の表示 */}
+          {!recipeData.has_image && (!recipeData.suggested_images || recipeData.suggested_images.length === 0) && (
+            <div className="bg-red-50 p-6 rounded-lg border border-red-200">
+              <h3 className="text-lg font-semibold mb-3 text-red-800">画像生成について</h3>
+              <p className="text-red-700">
+                申し訳ございませんが、画像の生成に失敗しました。レシピの説明をご参考ください。
+              </p>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
