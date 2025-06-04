@@ -53,7 +53,9 @@ async def generate_recipe_endpoint(req: IngredientsRequest):
             "suggested_images": [],  # 簡略化のため空の配列
             "has_image": recipe_data["has_image"],
             "image_url": recipe_data["image_url"],
-            "dish_name": recipe_data.get("dish_name", "不明")
+            "dish_name": recipe_data.get("dish_name", "不明"),
+            "country_name": recipe_data.get("country_name", "不明"),
+            "ingredients_name": recipe_data.get("ingredients_name", "不明")
         }
         
     except Exception as e:

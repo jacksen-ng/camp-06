@@ -12,10 +12,18 @@ def create_recipe(db: Session, recipe: RecipeCreate):
     db_recipe = Recipe(
         title=recipe.title,
         country=recipe.country,
-        ingredients=", ".join(recipe.ingredients),  # リストをカンマ区切りの文字列に変換
-        instructions=recipe.instructions
+        ingredients=recipe.ingredients, 
+        instructions=recipe.instructions,
+        image_url=recipe.image_url,
+        image_description=recipe.image_description
     )
     db.add(db_recipe)
     db.commit()
     db.refresh(db_recipe)
     return db_recipe
+
+def delete_recipe_id(db: Session, recipe_id: int):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    db.delete(recipe)
+    db.commit()
+    return

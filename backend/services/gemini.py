@@ -80,6 +80,36 @@ async def generate_recipe(ingredients: list[str]) -> dict:
         dish_response = await dish_chain.ainvoke({"recipe_text": recipe_text})
         dish_name = dish_response.content.strip()
 
+        # レシピから国名を抽出
+        country_name_prompt = ChatPromptTemplate.from_messages([
+            ("human", """
+            以下のレシピから国家名のみを抽出してください。
+
+            レシピ: {recipe_text}
+            
+            国家名のみを出力してください。
+            """)
+        ])
+        
+        country_chain = country_name_prompt | llm_text
+        country_response = await country_chain.ainvoke({"recipe_text": recipe_text})
+        country_name = country_response.content.strip()
+
+                # レシピから材料を抽出
+        ingredients_name_prompt = ChatPromptTemplate.from_messages([
+            ("human", """
+            以下のレシピから材料のみを抽出してください。
+
+            レシピ: {recipe_text}
+            
+            材料のみを出力してください。
+            """)
+        ])
+        
+        ingredients_chain = ingredients_name_prompt | llm_text
+        ingredients_response = await ingredients_chain.ainvoke({"recipe_text": recipe_text})
+        ingredients_name = ingredients_response.content.strip()
+
         # 画像生成用のメッセージ
         image_message = {
             "role": "user",
@@ -116,7 +146,9 @@ async def generate_recipe(ingredients: list[str]) -> dict:
             "image_description": image_description,
             "has_image": image_base64 is not None,
             "image_url": image_base64,
-            "dish_name": dish_name
+            "dish_name": dish_name,
+            "country_name": country_name,
+            "ingredients_name": ingredients_name
         }
 
     except Exception as e:
@@ -127,5 +159,7 @@ async def generate_recipe(ingredients: list[str]) -> dict:
             "image_description": "画像生成に失敗しました", 
             "has_image": False,
             "image_url": None,
-            "dish_name": "不明"
+            "dish_name": "不明",
+            "country_name": "不明",
+            "ingredients_name": "不明"
         }
