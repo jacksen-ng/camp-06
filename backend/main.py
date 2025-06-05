@@ -11,8 +11,7 @@ except (ValueError, ImportError):
     HAS_GEMINI = False
 
 from db.database import Base, engine
-from routers import auth
-from routers import recipe
+from routers import auth, gemini, recipe
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,6 +28,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(recipe.router)
+app.include_router(gemini.router)
 
 #ここから下別ファイルに移動させたい
 class IngredientsRequest(BaseModel):
@@ -37,26 +37,3 @@ class IngredientsRequest(BaseModel):
 @app.get("/")
 async def read_main():
     return {"msg":"Hello World"}
-
-@app.post("/generate-recipe")
-async def generate_recipe_endpoint(req: IngredientsRequest):
-    if not HAS_GEMINI:
-        raise HTTPException(status_code=503, detail="Gemini API not configured")
-    
-    try:
-        # レシピと画像を生成
-        recipe_data = await generate_recipe(req.ingredients)
-        
-        return {
-            "recipe": recipe_data["recipe"],
-            "image_description": recipe_data["image_description"],
-            "suggested_images": [],  # 簡略化のため空の配列
-            "has_image": recipe_data["has_image"],
-            "image_url": recipe_data["image_url"],
-            "dish_name": recipe_data.get("dish_name", "不明"),
-            "country_name": recipe_data.get("country_name", "不明"),
-            "ingredients_name": recipe_data.get("ingredients_name", "不明")
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"レシピ生成エラー: {str(e)}")
