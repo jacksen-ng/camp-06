@@ -33,7 +33,7 @@ export default function RecipeForm() {
     setLoading(true);
     setRecipeData(null);
     try {
-      const res = await fetch("http://localhost:8000/generate-recipe", {
+      const res = await fetch("http://localhost:8000/gemini/generate-recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ingredients }),
