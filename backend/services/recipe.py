@@ -12,7 +12,7 @@ def create_recipe(db: Session, recipe: RecipeCreate):
     db_recipe = Recipe(
         title=recipe.title,
         country=recipe.country,
-        ingredients=recipe.ingredients, 
+        ingredients=",".join(recipe.ingredients), 
         instructions=recipe.instructions,
         image_url=recipe.image_url,
         image_description=recipe.image_description
