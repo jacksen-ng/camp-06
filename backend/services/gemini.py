@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate
+import re
 
 # .env から APIキーを読み込む
 load_dotenv()
@@ -34,6 +35,19 @@ def _get_image_base64(response: AIMessage) -> str | None:
         return None
     except Exception:
         return None
+    
+def parse_recipe_text(recipe_text: str) -> dict:
+    country_match = re.search(r"国家名[:：]\s*(.*)", recipe_text)
+    title_match = re.search(r"料理名[:：]\s*(.*)", recipe_text)
+    ingredients_match = re.search(r"材料[:：]\s*((?:.|\n)*?)\n手順[:：]", recipe_text)
+    instructions_match = re.search(r"手順[:：]\s*((?:.|\n)*)", recipe_text)
+
+    return {
+        "country_name": country_match.group(1).strip() if country_match else "Unknown",
+        "dish_name": title_match.group(1).strip() if title_match else "Unknown",
+        "ingredients_name": ingredients_match.group(1).strip() if ingredients_match else "Unknown",
+        "instructions": instructions_match.group(1).strip() if instructions_match else "Unknown"
+    }
 
 async def generate_recipe(ingredients: list[str]) -> dict:
     if not ingredients:
@@ -65,55 +79,12 @@ async def generate_recipe(ingredients: list[str]) -> dict:
         recipe_response = await recipe_chain.ainvoke({"ingredients": ingredients_str})
         recipe_text = recipe_response.content
 
-        # レシピから料理名を抽出
-        dish_name_prompt = ChatPromptTemplate.from_messages([
-            ("human", """
-            以下のレシピから料理名のみを抽出してください。
-
-            レシピ: {recipe_text}
-            
-            料理名のみを出力してください。
-            """)
-        ])
-        
-        dish_chain = dish_name_prompt | llm_text
-        dish_response = await dish_chain.ainvoke({"recipe_text": recipe_text})
-        dish_name = dish_response.content.strip()
-
-        # レシピから国名を抽出
-        country_name_prompt = ChatPromptTemplate.from_messages([
-            ("human", """
-            以下のレシピから国家名のみを抽出してください。
-
-            レシピ: {recipe_text}
-            
-            国家名のみを出力してください。
-            """)
-        ])
-        
-        country_chain = country_name_prompt | llm_text
-        country_response = await country_chain.ainvoke({"recipe_text": recipe_text})
-        country_name = country_response.content.strip()
-
-                # レシピから材料を抽出
-        ingredients_name_prompt = ChatPromptTemplate.from_messages([
-            ("human", """
-            以下のレシピから材料のみを抽出してください。
-
-            レシピ: {recipe_text}
-            
-            材料のみを出力してください。
-            """)
-        ])
-        
-        ingredients_chain = ingredients_name_prompt | llm_text
-        ingredients_response = await ingredients_chain.ainvoke({"recipe_text": recipe_text})
-        ingredients_name = ingredients_response.content.strip()
+        recipe_data = parse_recipe_text(recipe_text)
 
         # 画像生成用のメッセージ
         image_message = {
             "role": "user",
-            "content": f"Generate a photorealistic, appetizing image of a dish called '{dish_name}' made with {ingredients_str}. The dish should look delicious and professionally plated on a beautiful dish. High quality food photography style."
+            "content": f"Generate a photorealistic, appetizing image of a dish called '{recipe_data["dish_name"]}' made with {ingredients_str}. The dish should look delicious and professionally plated on a beautiful dish. High quality food photography style."
         }
 
         # 画像生成
@@ -146,9 +117,9 @@ async def generate_recipe(ingredients: list[str]) -> dict:
             "image_description": image_description,
             "has_image": image_base64 is not None,
             "image_url": image_base64,
-            "dish_name": dish_name,
-            "country_name": country_name,
-            "ingredients_name": ingredients_name
+            "dish_name": recipe_data["dish_name"],
+            "country_name": recipe_data["country_name"],
+            "ingredients_name": recipe_data["ingredients_name"]
         }
 
     except Exception as e:
