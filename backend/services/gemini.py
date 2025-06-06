@@ -84,7 +84,7 @@ async def generate_recipe(ingredients: list[str]) -> dict:
         # 画像生成用のメッセージ
         image_message = {
             "role": "user",
-            "content": f"Generate a photorealistic, appetizing image of a dish called '{recipe_data["dish_name"]}' made with {ingredients_str}. The dish should look delicious and professionally plated on a beautiful dish. High quality food photography style."
+            "content": f"Generate a photorealistic, appetizing image of a dish called '{recipe_data['dish_name']}' made with {ingredients_str}. The dish should look delicious and professionally plated on a beautiful dish. High quality food photography style."
         }
 
         # 画像生成
