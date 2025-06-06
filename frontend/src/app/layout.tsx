@@ -2,6 +2,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Background from '@/components/Background';
 
 export default function RootLayout({
   children,
@@ -10,10 +11,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="bg-gray-100 min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col">
+        <Background />
         <AuthProvider>
           <Header />
-          <main className="flex-grow">{children}</main>
+          <main className="flex-grow relative z-10">{children}</main>
           <Footer />
         </AuthProvider>
       </body>
