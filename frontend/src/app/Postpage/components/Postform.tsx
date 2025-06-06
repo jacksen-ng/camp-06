@@ -30,7 +30,6 @@ export default function CreateRecipePage() {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      // 创建预览
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -46,7 +45,6 @@ export default function CreateRecipePage() {
     try {
       let imageUrl = null;
 
-      // 如果有图片文件，转换为base64
       if (imageFile) {
         const reader = new FileReader();
         imageUrl = await new Promise<string>((resolve) => {
@@ -74,7 +72,6 @@ export default function CreateRecipePage() {
 
       if (response.ok) {
         alert('投稿が完了しました！');
-        // フォームをリセット
         setTitle('');
         setCountry('');
         setIngredients([]);
@@ -83,7 +80,6 @@ export default function CreateRecipePage() {
         setImagePreview(null);
         setImageDescription('');
         
-        // トップページに戻る
         router.push('/top-page');
       } else {
         const errorData = await response.json();

@@ -4,7 +4,6 @@ from schemas.recipe import RecipeCreate, RecipeRead
 
 def get_recipes(db: Session):
     db_recipes = db.query(Recipe).all()
-    # 将ingredients字符串转换回数组
     recipes = []
     for db_recipe in db_recipes:
         recipe_dict = {
@@ -47,7 +46,6 @@ def create_recipe(db: Session, recipe: RecipeCreate):
     db.commit()
     db.refresh(db_recipe)
     
-    # 返回时也要转换格式
     recipe_dict = {
         "id": db_recipe.id,
         "title": db_recipe.title,
