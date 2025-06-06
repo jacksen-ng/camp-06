@@ -11,6 +11,7 @@ interface RecipeResponse {
   dish_name: string;
   country_name: string;
   ingredients_names: string[];
+  ingredients_name: string;
 }
 
 export default function RecipeForm() {
@@ -49,21 +50,33 @@ export default function RecipeForm() {
   };
 
   const handleSave = async () => {
-  if (!recipeData) return;
+    if (!recipeData) return;
 
-  await fetch("http://localhost:3000/recipes/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      title: recipeData.dish_name,
-      country: recipeData.country_name,
-      ingredients: (recipeData.ingredients_names ?? []).map((s) => s.trim()),
-      instructions: recipeData.recipe,
-      image_url: recipeData.image_url,
-      image_description: recipeData.image_description,
-      }),
-    });
-    alert("保存しました！");
+    try {
+      const res = await fetch("http://localhost:8000/recipes/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: recipeData.dish_name,
+          country: recipeData.country_name,
+          ingredients: recipeData.ingredients_name ? 
+            recipeData.ingredients_name.split(',').map((s: string) => s.trim()) : 
+            ingredients, // fallback to original ingredients if parsing fails
+          instructions: recipeData.recipe,
+          image_url: recipeData.image_url,
+          image_description: recipeData.image_description,
+          }),
+        });
+        
+        if (res.ok) {
+          alert("保存しました！");
+        } else {
+          const errorData = await res.json();
+          alert(`保存に失敗しました: ${errorData.detail || 'Unknown error'}`);
+        }
+      } catch (error) {
+        alert("保存に失敗しました");
+      }
   };
 
   return (
