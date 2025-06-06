@@ -49,46 +49,56 @@ export default function LoginForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            メールアドレス
-            </label>
-            <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-        </div>
-        
-        <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            パスワード
-            </label>
-            <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-        </div>
+        <div className="w-full max-w-md mx-auto">
+            <div className="bg-white/70 backdrop-blur-md p-10 rounded-2xl shadow-2xl border border-white/30">
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        ログイン
+                    </h1>
+                    <p className="text-gray-600 mt-2">アカウントにログインします</p>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                        メールアドレス
+                        </label>
+                        <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="mt-1 block w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                        パスワード
+                        </label>
+                        <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="mt-1 block w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                        />
+                    </div>
 
-        {error && (
-            <div className="text-red-600 text-sm">{error}</div>
-        )}
+                    {error && (
+                        <div className="text-red-600 bg-red-100 border border-red-400 text-sm rounded-lg p-3 text-center">{error}</div>
+                    )}
 
-        <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-        >
-            {loading ? 'Logging in...' : 'Login'}
-        </button>
-        </form>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all duration-300 transform hover:-translate-y-0.5"
+                    >
+                        {loading ? 'ログイン中...' : 'ログイン'}
+                    </button>
+                </form>
+            </div>
+        </div>
     );
 }

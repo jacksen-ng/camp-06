@@ -5,7 +5,7 @@ import { TypeAnimation } from 'react-type-animation';
 
 export default function TopPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-amber-100 via-pink-100 to-purple-100 p-6 space-y-10">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-amber-100 via-pink-100 to-purple-100 p-6">
       
       {/* アニメーション見出し */}
       <TypeAnimation
