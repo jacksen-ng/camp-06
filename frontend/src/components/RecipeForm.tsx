@@ -9,6 +9,9 @@ interface RecipeResponse {
   has_image: boolean;
   image_url: string | null;
   dish_name: string;
+  country_name: string;
+  ingredients_names: string[];
+  ingredients_name: string;
 }
 
 export default function RecipeForm() {
@@ -44,6 +47,36 @@ export default function RecipeForm() {
       alert("レシピ生成に失敗しました");
     }
     setLoading(false);
+  };
+
+  const handleSave = async () => {
+    if (!recipeData) return;
+
+    try {
+      const res = await fetch("http://localhost:8000/recipes/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: recipeData.dish_name,
+          country: recipeData.country_name,
+          ingredients: recipeData.ingredients_name ? 
+            recipeData.ingredients_name.split(',').map((s: string) => s.trim()) : 
+            ingredients, // fallback to original ingredients if parsing fails
+          instructions: recipeData.recipe,
+          image_url: recipeData.image_url,
+          image_description: recipeData.image_description,
+          }),
+        });
+        
+        if (res.ok) {
+          alert("保存しました！");
+        } else {
+          const errorData = await res.json();
+          alert(`保存に失敗しました: ${errorData.detail || 'Unknown error'}`);
+        }
+      } catch (error) {
+        alert("保存に失敗しました");
+      }
   };
 
   return (
@@ -83,6 +116,11 @@ export default function RecipeForm() {
         }`}
       >
         {loading ? "生成中..." : "レシピを生成"}
+      </button>
+      <button
+        onClick={handleSave}
+        className="mt-4 w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+        レシピを保存
       </button>
 
       {/* レシピ表示セクション */}
@@ -165,6 +203,7 @@ export default function RecipeForm() {
             </div>
           )}
         </div>
+      
       )}
     </div>
   );
