@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, text
+from sqlalchemy import Column, Integer, String, Text
 from db.database import Base
 
 class User(Base):
@@ -14,5 +14,5 @@ class Recipe(Base):
     country = Column(String, nullable=False) #国名
     ingredients = Column(String, nullable=False) #材料
     instructions = Column(String, nullable=False) #作り方
-    image_url = Column(String, nullable=True)
+    image_url = Column(Text, nullable=True)
     image_description = Column(String, nullable=True)
