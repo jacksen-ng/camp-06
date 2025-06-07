@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from services.recipe import get_recipes, get_recipe, create_recipe, delete_recipe_id
 from schemas.recipe import RecipeRead, RecipeCreate
 from services.auth import get_db, get_current_user
-from db.models import User
+from db.models import User , Recipe
 from typing import List
 
 router = APIRouter(prefix="/recipes", tags=["recipe"])
@@ -64,3 +64,21 @@ def delete_recipe(recipe_id: int, db: Session = Depends(get_db), current_user: U
     """
     delete_recipe_id(db, recipe_id)
     return
+
+@router.get("/user/me")
+def get_my_recipes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    recipes = db.query(Recipe).filter(Recipe.email  == current_user.email).all()
+    return [r.__dict__ for r in recipes]
+
+@router.get("/user/{user_id}")
+def get_user_recipes(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    recipes = db.query(Recipe).filter(Recipe.email == user_id).all()
+    if not recipes:
+        raise HTTPException(status_code=404, detail="ユーザーのレシピが見つかりません")
+    return [r.dict() for r in recipes]
