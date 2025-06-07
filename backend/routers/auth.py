@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from db.models import User
 from schemas.auth import UserCreate, UserLogin, Token
 from services.auth import hash_password, verify_password, create_access_token, get_db
+from db.default_icon import DEFAULT_ICON
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -46,7 +47,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     hashed_pw = hash_password(user.password)
-    new_user = User(email=user.email, hashed_password=hashed_pw, user_name="user")
+    new_user = User(email=user.email, hashed_password=hashed_pw, user_name="user", icon_url=DEFAULT_ICON)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
