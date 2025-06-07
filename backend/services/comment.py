@@ -1,4 +1,4 @@
-from db.models import Comment
+from db.models import Comment, User
 from sqlalchemy.orm import Session
 
 def create_comment(db: Session, recipe_id: int, commenter_id: int, comment_text: str):
@@ -13,14 +13,20 @@ def create_comment(db: Session, recipe_id: int, commenter_id: int, comment_text:
     return db_comment
 
 def get_comments_by_recipe(db: Session, recipe_id: int):
-    db_comments = db.query(Comment).filter(Comment.recipe_id == recipe_id).all()
+    db_comments = (
+        db.query(Comment, User)
+        .join(User, Comment.commenter_id == User.id)
+        .filter(Comment.recipe_id == recipe_id)
+        .all()
+    )
     comments = []
-    for db_comment in db_comments:
+    for comment, user in db_comments:
         comment_dict = {
-            "id": db_comment.id,
-            "recipe_id": db_comment.recipe_id,
-            "commenter_id": db_comment.commenter_id,
-            "comment_text": db_comment.comment_text
+            "id": comment.id,
+            "recipe_id": comment.recipe_id,
+            "commenter_id": comment.commenter_id,
+            "comment_text": comment.comment_text,
+            "user_name": user.user_name  # ここでユーザー名を追加
         }
         comments.append(comment_dict)
     return comments
