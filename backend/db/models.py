@@ -11,7 +11,7 @@ class User(Base):
 class Recipe(Base):
     __tablename__ = "recipes"
     id = Column(Integer, primary_key=True, index=True)
-    email =Column(String, unique=True, index=True, nullable=False)
+    email =Column(String, index=True, nullable=False)
     title = Column(String, nullable=False)
     country = Column(String, nullable=False) #国名
     ingredients = Column(String, nullable=False) #材料
