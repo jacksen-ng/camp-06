@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/app/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useAuth } from "@/app/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import MyRecipesList from "./components/MyRecipesList";
 
 export default function MyPage() {
   const { user, isAuthenticated } = useAuth();
@@ -13,7 +14,7 @@ export default function MyPage() {
         <p className="text-gray-600 text-xl">ログインが必要です</p>
         <button
           className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded"
-          onClick={() => router.push('/login')}
+          onClick={() => router.push("/login")}
         >
           ログインへ
         </button>
@@ -34,6 +35,7 @@ export default function MyPage() {
           <h2 className="text-xl font-bold">{user.user_name}</h2>
           <p className="text-sm text-gray-500">{user.email}</p>
         </div>
+        <MyRecipesList />
       </div>
     </div>
   );
