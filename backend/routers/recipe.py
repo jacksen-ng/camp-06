@@ -2,18 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from services.recipe import get_recipes, get_recipe, create_recipe, delete_recipe_id
 from schemas.recipe import RecipeRead, RecipeCreate
-from db.database import get_db
+from services.auth import get_db, get_current_user
+from db.models import User
 from typing import List
 
 router = APIRouter(prefix="/recipes", tags=["recipe"])
 
 @router.post("/", response_model=RecipeRead)
-def save_recipe(recipe: RecipeCreate, db: Session = Depends(get_db)):
+def save_recipe(recipe: RecipeCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     レシピを保存するエンドポイント。
     Parameters:
         recipe: RecipeCreate（title, country, ingredients, instructions）
         db: DBセッション（自動依存注入）
+        current_user: User（ユーザー情報）
     Returns:
         RecipeRead（保存されたレシピの詳細）
     Raises:
@@ -23,11 +25,12 @@ def save_recipe(recipe: RecipeCreate, db: Session = Depends(get_db)):
     return create_recipe(db, recipe)
 
 @router.get("/", response_model=List[RecipeRead])
-def read_recipes(db: Session = Depends(get_db)):
+def read_recipes(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     すべてのレシピを取得するエンドポイント。
     Parameters:
         db: DBセッション（自動依存注入）
+        current_user: User（ユーザー情報）
     Returns:
         List[RecipeRead]（レシピのリスト）
     Raises:
@@ -37,12 +40,13 @@ def read_recipes(db: Session = Depends(get_db)):
     return recipes
 
 @router.get("/{recipe_id}", response_model=RecipeRead)
-def read_recipe(recipe_id: int, db: Session = Depends(get_db)):
+def read_recipe(recipe_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     特定のレシピをIDで取得するエンドポイント。
     Parameters:
         recipe_id: int（レシピのID）
         db: DBセッション（自動依存注入）
+        current_user: User（ユーザー情報）
     Returns:
         RecipeRead（レシピの詳細）
     Raises:
@@ -53,8 +57,8 @@ def read_recipe(recipe_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="レシピが見つかりません")
     return recipe
 
-@router.delete("/recipes/{recipe_id}", status_code=204)
-def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
+@router.delete("/{recipe_id}", status_code=204)
+def delete_recipe(recipe_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     指定されたレシピを削除するエンドポイント。
     """

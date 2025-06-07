@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { recipeApi } from '@/app/lib/api';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 export default function CreateRecipePage() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [title, setTitle] = useState('');
   const [country, setCountry] = useState('');
   const [ingredients, setIngredients] = useState<string[]>([]);
@@ -40,10 +43,17 @@ export default function CreateRecipePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isAuthenticated) {
+      alert('ログインが必要です');
+      router.push('/login');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      let imageUrl = null;
+      let imageUrl = undefined;
 
       if (imageFile) {
         const reader = new FileReader();
@@ -53,38 +63,25 @@ export default function CreateRecipePage() {
         });
       }
 
-      const recipeData = {
+      await recipeApi.createRecipe({
         title,
         country,
-        ingredients,
+        ingredients: ingredients,
         instructions,
         image_url: imageUrl,
-        image_description: imageDescription || null,
-      };
-
-      const response = await fetch('http://localhost:8000/recipes/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(recipeData),
+        image_description: imageDescription || undefined,
       });
 
-      if (response.ok) {
-        alert('投稿が完了しました！');
-        setTitle('');
-        setCountry('');
-        setIngredients([]);
-        setInstructions('');
-        setImageFile(null);
-        setImagePreview(null);
-        setImageDescription('');
-        
-        router.push('/top-page');
-      } else {
-        const errorData = await response.json();
-        alert(`投稿に失敗しました: ${errorData.detail || 'Unknown error'}`);
-      }
+      alert('投稿が完了しました！');
+      setTitle('');
+      setCountry('');
+      setIngredients([]);
+      setInstructions('');
+      setImageFile(null);
+      setImagePreview(null);
+      setImageDescription('');
+      
+      router.push('/top-page');
     } catch (error) {
       console.error('Error submitting recipe:', error);
       alert('投稿に失敗しました');
@@ -93,163 +90,167 @@ export default function CreateRecipePage() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className="bg-white/70 backdrop-blur-md p-10 rounded-2xl shadow-2xl w-full max-w-2xl border border-white/30 space-y-8">
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-wide">
-            世界の料理 投稿フォーム
-          </h1>
-          <p className="text-gray-600 mt-2">あなたのレシピを世界に共有しよう</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">ログインが必要です</h2>
+          <p className="text-gray-600 mb-6">レシピを投稿するにはログインしてください。</p>
           <button
-            onClick={() => router.push('/top-page')}
-            className="mt-4 text-indigo-600 hover:text-indigo-700 hover:underline transition-colors duration-200"
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            ← トップページに戻る
+            ログインする
           </button>
         </div>
+      </div>
+    );
+  }
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* タイトル */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">料理名</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-white/50 border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-              placeholder="例: 王国の香辛料煮込み"
-              required
-            />
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              レシピを投稿する
+            </h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
           </div>
 
-          {/* 国名 */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">国名</label>
-            <input
-              type="text"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="w-full bg-white/50 border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-              placeholder="例: エルフの森国"
-              required
-            />
-          </div>
-
-          {/* 食材 */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              食材 ({ingredients.length}種類)
-            </label>
-            <div className="flex gap-2 mb-3">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
+                レシピタイトル *
+              </label>
               <input
                 type="text"
-                value={newIngredient}
-                onChange={(e) => setNewIngredient(e.target.value)}
-                className="flex-1 bg-white/50 border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-                placeholder="食材を入力（例: トマト、鶏肉）"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddIngredient();
-                  }
-                }}
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                placeholder="例：トマトパスタ"
               />
-              <button
-                type="button"
-                onClick={handleAddIngredient}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200"
-              >
-                追加
-              </button>
             </div>
-            {ingredients.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {ingredients.map((ingredient, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
-                  >
-                    {ingredient}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveIngredient(index)}
-                      className="ml-1 text-green-600 hover:text-green-800"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
+
+            <div>
+              <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-2">
+                料理の国・地域 *
+              </label>
+              <input
+                type="text"
+                id="country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                placeholder="例：イタリア"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                材料 *
+              </label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={newIngredient}
+                  onChange={(e) => setNewIngredient(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddIngredient())}
+                  className="flex-1 px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                  placeholder="材料を入力してください"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddIngredient}
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
+                >
+                  追加
+                </button>
               </div>
-            )}
-          </div>
+              {ingredients.length > 0 && (
+                <div className="space-y-2">
+                  {ingredients.map((ingredient, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200"
+                    >
+                      <span className="flex-1 text-gray-700">{ingredient}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveIngredient(index)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* 作り方 */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">作り方</label>
-            <textarea
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              className="w-full bg-white/50 border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-              rows={6}
-              placeholder="手順を詳しく説明してください。料理の背景や文化的なストーリーもぜひ！"
-              required
-            />
-          </div>
+            <div>
+              <label htmlFor="instructions" className="block text-sm font-semibold text-gray-700 mb-2">
+                作り方 *
+              </label>
+              <textarea
+                id="instructions"
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                required
+                rows={6}
+                className="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                placeholder="作り方を詳しく説明してください..."
+              />
+            </div>
 
-          {/* 画像アップロード */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              料理画像 (オプション)
-            </label>
-            <div className="space-y-3">
+            <div>
+              <label htmlFor="image" className="block text-sm font-semibold text-gray-700 mb-2">
+                料理の画像
+              </label>
               <input
                 type="file"
+                id="image"
                 accept="image/*"
                 onChange={handleImageChange}
-                aria-label="料理画像をアップロード"
-                className="w-full bg-white/50 border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
+                className="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
               />
               {imagePreview && (
-                <div className="mt-3">
+                <div className="mt-4">
                   <img
                     src={imagePreview}
                     alt="プレビュー"
-                    className="w-full max-w-sm h-48 object-cover rounded-lg border-2 border-gray-200"
+                    className="w-full max-w-xs mx-auto rounded-lg shadow-md border border-gray-200"
                   />
                 </div>
               )}
             </div>
-          </div>
 
-          {/* 画像説明 */}
-          {imageFile && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                料理の外観説明 (オプション)
+              <label htmlFor="imageDescription" className="block text-sm font-semibold text-gray-700 mb-2">
+                画像の説明
               </label>
-              <textarea
+              <input
+                type="text"
+                id="imageDescription"
                 value={imageDescription}
                 onChange={(e) => setImageDescription(e.target.value)}
-                className="w-full bg-white/50 border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
-                rows={3}
-                placeholder="料理の見た目や色合い、盛り付けなどを説明してください"
+                className="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+                placeholder="画像の説明（任意）"
               />
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting || ingredients.length === 0}
-            className={`w-full py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 ${
-              isSubmitting || ingredients.length === 0
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-xl hover:-translate-y-0.5'
-            }`}
-          >
-            {isSubmitting ? '投稿中...' : '✈️ 投稿する'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isSubmitting || !title || !country || ingredients.length === 0 || !instructions}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              {isSubmitting ? '投稿中...' : 'レシピを投稿する'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
