@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function Header() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const router = useRouter();
 
   const handleLogoClick = (e: React.MouseEvent) => {
@@ -47,6 +47,16 @@ export default function Header() {
                 >
                   ログアウト
                 </button>
+
+                {user?.icon && (
+                  <img
+                    src={`data:image/png;base64,${user.icon}`}
+                    alt="ユーザーアイコン"
+                    className="w-10 h-10 rounded-full border border-gray-300 shadow"
+                    onClick={() => router.push('/mypage')}
+                  />
+                )}
+
               </>
             ) : (
               <>
