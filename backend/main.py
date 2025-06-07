@@ -11,7 +11,7 @@ except (ValueError, ImportError):
     HAS_GEMINI = False
 
 from db.database import Base, engine
-from routers import auth, gemini, recipe
+from routers import auth, gemini, recipe, user, comment
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,6 +29,8 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(recipe.router)
 app.include_router(gemini.router)
+app.include_router(user.router)
+app.include_router(comment.router)
 
 #ここから下別ファイルに移動させたい
 class IngredientsRequest(BaseModel):
