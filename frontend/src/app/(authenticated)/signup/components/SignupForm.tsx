@@ -33,7 +33,7 @@ export default function SignupForm() {
 
         if (response.ok) {
             login(data.access_token);
-            router.push('/recipes');
+            router.push('/top-page');
         } else {
             setError(data.detail || 'Registration failed');
         }
