@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, text
+from sqlalchemy import Column, Integer, String, ForeignKey, Text
 from db.database import Base
 
 class User(Base):
@@ -18,3 +18,11 @@ class Recipe(Base):
     instructions = Column(String, nullable=False) #作り方
     image_url = Column(String, nullable=True)
     image_description = Column(String, nullable=True)
+
+class Comment(Base):
+    __tablename__ = "comments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
+    commenter_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    comment_text = Column(Text, nullable=False)
