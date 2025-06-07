@@ -23,6 +23,7 @@ export interface Recipe {
   instructions: string;
   image_url?: string;
   image_description?: string;
+  user_name?: string;
 }
 
 export interface RecipeCreate {

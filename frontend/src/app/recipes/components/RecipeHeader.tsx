@@ -4,9 +4,10 @@ interface RecipeHeaderProps {
   title: string;
   country?: string;
   imageDescription?: string;
+  user_name?: string;
 }
 
-export default function RecipeHeader({ title, country, imageDescription }: RecipeHeaderProps) {
+export default function RecipeHeader({ title, country, imageDescription, user_name }: RecipeHeaderProps) {
   return (
     <div className="lg:w-2/3">
       <div className="flex items-center gap-3 mb-4">
@@ -19,6 +20,11 @@ export default function RecipeHeader({ title, country, imageDescription }: Recip
           </span>
         )}
       </div>
+      {user_name && (
+        <p className="text-sm text-gray-500 mb-2">
+          投稿者: {user_name}
+        </p>
+      )}
       {imageDescription && (
         <p className="text-lg text-gray-600 italic mb-4">
           {imageDescription}
