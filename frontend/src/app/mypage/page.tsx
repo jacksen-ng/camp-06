@@ -35,8 +35,8 @@ export default function MyPage() {
           <h2 className="text-xl font-bold">{user.user_name}</h2>
           <p className="text-sm text-gray-500">{user.email}</p>
         </div>
-        <MyRecipesList />
       </div>
+      <MyRecipesList />
     </div>
   );
 }
