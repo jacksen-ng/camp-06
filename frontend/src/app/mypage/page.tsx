@@ -24,19 +24,25 @@ export default function MyPage() {
 
   return (
     <div className="max-w-3xl mx-auto mt-12 p-6">
-      {/* ユーザー情報表示 */}
       <div className="flex items-center gap-4 mb-8">
-        <img
-          src={`data:image/png;base64,${user.icon}`}
-          alt="アイコン"
-          className="w-16 h-16 rounded-full border"
-        />
+        {user.icon && user.icon.startsWith("data:image/") ? (
+          <img
+            src={user.icon}
+            alt="アイコン"
+            className="w-16 h-16 rounded-full border"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full border bg-gray-200 flex items-center justify-center">
+            <span className="text-sm text-gray-500">No Image</span>
+          </div>
+        )}
+
         <div>
           <h2 className="text-xl font-bold">{user.user_name}</h2>
           <p className="text-sm text-gray-500">{user.email}</p>
         </div>
-        <MyRecipesList />
       </div>
+      <MyRecipesList />
     </div>
   );
 }
