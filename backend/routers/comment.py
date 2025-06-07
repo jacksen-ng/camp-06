@@ -2,22 +2,28 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db.database import get_db
 from services.comment import create_comment, get_comments_by_recipe
+from services.auth import get_current_user
+from db.models import User
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/comments", tags=["comment"])
 
+class CommentCreate(BaseModel):
+    comment_text: str
+
 @router.post("/{recipe_id}")
-def post_comment(recipe_id: int, commenter_id: int, comment_text: str, db: Session = Depends(get_db)):
+def post_comment(recipe_id: int, comment: CommentCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     レシピにコメントを投稿するエンドポイント。
     Parameters:
         recipe_id: int（レシピのID）
-        commenter_id: int（コメント投稿者のユーザーID）
+        current_user: User（現在のユーザー情報）
         comment_text: str（コメント内容）
         db: DBセッション（自動依存注入）
     Returns:
         成功メッセージ
     """
-    create_comment(db, recipe_id, commenter_id, comment_text)
+    create_comment(db, recipe_id, current_user.id, comment.comment_text)
     return {"message": "コメントが投稿されました"}
 
 @router.get("/{recipe_id}")
