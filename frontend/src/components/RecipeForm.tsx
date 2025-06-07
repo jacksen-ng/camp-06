@@ -10,6 +10,7 @@ export default function RecipeForm() {
   const [input, setInput] = useState("");
   const [recipeData, setRecipeData] = useState<GenerateRecipeResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // ← モーダル状態を追加
 
   const handleAddIngredient = () => {
     if (input.trim()) {
@@ -73,11 +74,9 @@ export default function RecipeForm() {
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg p-8">
         <h1 className="text-2xl font-bold mb-6">レシピ生成</h1>
-        
+
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            材料を追加
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">材料を追加</label>
           <div className="flex gap-2">
             <input
               type="text"
@@ -128,20 +127,59 @@ export default function RecipeForm() {
           <div className="bg-gray-50 rounded-lg p-6">
             <h2 className="text-xl font-bold mb-4">{recipeData.dish_name}</h2>
             <p className="text-sm text-gray-600 mb-2">国: {recipeData.country_name}</p>
-            
+
             {recipeData.image_url && (
-              <img
-                src={recipeData.image_url}
-                alt={recipeData.dish_name}
-                className="w-full max-w-md mx-auto rounded-lg mb-4"
-              />
+              <div
+                className="relative group w-full max-w-md mx-auto mb-4 cursor-pointer"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <img
+                  src={recipeData.image_url}
+                  alt={recipeData.dish_name}
+                  className="w-full rounded-lg object-cover"
+                />
+
+                {/* オーバーレイ＋アイコン */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center pointer-events-none">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3">
+                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
             )}
-            
+
+            {/* モーダル */}
+            {isModalOpen && (
+              <div
+                className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+                onClick={() => setIsModalOpen(false)}
+              >
+                <div
+                  className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full mx-4 relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-2xl"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    ✕
+                  </button>
+                  <img
+                    src={recipeData.image_url}
+                    alt={recipeData.dish_name}
+                    className="w-full h-auto rounded"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="mb-4">
               <h3 className="font-semibold mb-2">作り方:</h3>
               <p className="whitespace-pre-wrap text-gray-700">{recipeData.recipe}</p>
             </div>
-            
+
             <button
               onClick={handleSave}
               className="w-full py-2 px-4 bg-purple-500 text-white rounded-md hover:bg-purple-600"
