@@ -11,6 +11,8 @@ import IngredientsSection from '@/app/recipes/components/IngredientsSection';
 import InstructionsSection from '@/app/recipes/components/InstructionsSection';
 import LoadingSpinner from '@/error/LoadingSpinner';
 import ErrorMessage from '@/error/ErrorMessage';
+import ReactionButton from '@/app/recipes/components/ReactionButton';
+import CommentSection from '@/app/recipes/components/CommentSection';
 
 export default function RecipeDetailPage() {
   const router = useRouter();
@@ -92,8 +94,8 @@ export default function RecipeDetailPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
+        <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.back()}
             className="mb-6 flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors"
@@ -101,37 +103,49 @@ export default function RecipeDetailPage() {
             ← 戻る
           </button>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/20">
-            <div className="p-8 md:p-12">
-              <div className="flex flex-col lg:flex-row gap-8 mb-8">
-                <RecipeHeader 
-                  title={recipe.title}
-                  country={recipe.country}
-                  imageDescription={recipe.image_description}
-                />
+          {/* 左：レシピ / 右：リアクション */}
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
+            {/* レシピ詳細（左） */}
+            <div className="w-full lg:w-2/3">
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+                <div className="p-8 md:p-12">
+                  <div className="flex flex-col lg:flex-row gap-8 mb-8">
+                    <RecipeHeader 
+                      title={recipe.title}
+                      country={recipe.country}
+                      imageDescription={recipe.image_description}
+                    />
 
-                {recipe.image_url && (
-                  <RecipeImage 
-                    imageUrl={recipe.image_url}
-                    title={recipe.title}
-                    onImageClick={openImageModal}
-                  />
-                )}
-              </div>
+                    {recipe.image_url && (
+                      <RecipeImage 
+                        imageUrl={recipe.image_url}
+                        title={recipe.title}
+                        onImageClick={openImageModal}
+                      />
+                    )}
+                  </div>
 
-              <div className="grid lg:grid-cols-2 gap-8">
-                <IngredientsSection ingredients={ingredientsArray} />
-                <InstructionsSection instructions={recipe.instructions} />
-              </div>
+                  <div className="grid lg:grid-cols-2 gap-8">
+                    <IngredientsSection ingredients={ingredientsArray} />
+                    <InstructionsSection instructions={recipe.instructions} />
+                  </div>
 
-              <div className="mt-8 text-center">
-                <button
-                  onClick={() => router.push('/top-page')}
-                  className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg"
-                >
-                  他のレシピを見る
-                </button>
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={() => router.push('/top-page')}
+                      className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg"
+                    >
+                      他のレシピを見る
+                    </button>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* リアクション・コメント（右） */}
+            <div className="w-full lg:w-1/3 flex flex-col gap-8">
+              <ReactionButton />
+              <CommentSection />
             </div>
           </div>
         </div>
@@ -147,4 +161,4 @@ export default function RecipeDetailPage() {
       )}
     </>
   );
-} 
+}
