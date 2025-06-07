@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
+import Cropper from "react-easy-crop";
 
 type Recipe = {
   id: number;
@@ -14,6 +15,43 @@ type Recipe = {
   country?: string;
 };
 
+function createImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.setAttribute("crossOrigin", "anonymous"); // CORS回避
+    image.src = url;
+  });
+}
+
+async function getCroppedImg(
+  imageSrc: string,
+  pixelCrop: { x: number; y: number; width: number; height: number }
+): Promise<string> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) throw new Error("Canvas context not found");
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return canvas.toDataURL("image/jpeg");
+}
+
 export default function MyRecipesList() {
   const { token, isAuthenticated, user } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -22,6 +60,13 @@ export default function MyRecipesList() {
   const [nameUpdating, setNameUpdating] = useState(false);
   const [iconUploading, setIconUploading] = useState(false);
   const router = useRouter();
+
+  // クロップ用ステート
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || !token) {
@@ -73,47 +118,65 @@ export default function MyRecipesList() {
     }
   };
 
-  const handleIconChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file || !(file instanceof Blob) || !token) return;
+  // クロップ完了時コールバック
+  const onCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
 
-  setIconUploading(true);
-
-  const convertToBase64 = (file: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-    });
+  // ファイル選択時：クロップ用モーダルを開く
+  const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+      setCropModalOpen(true);
+    }
   };
 
-  try {
-    const base64 = await convertToBase64(file);
-    const res = await fetch("http://localhost:8000/user/icon", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ icon_url: base64 }),
-    });
+  // クロップ画像をサーバへ送信
+  const handleCropSave = async () => {
+    if (!selectedFile || !croppedAreaPixels) return;
 
-    if (!res.ok) {
-      const errData = await res.json();
-      alert("アイコン更新失敗: " + errData.detail);
-      return;
-    }
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedFile);
+    reader.onload = async () => {
+      try {
+        const base64CroppedImage = await getCroppedImg(
+          reader.result as string,
+          croppedAreaPixels
+        );
+        if (!token) return;
 
-    alert("アイコンを更新しました。ページを再読み込みします。");
-    window.location.reload();
-  } catch (err) {
-    console.error("アイコン更新失敗:", err);
-    alert("画像のアップロードに失敗しました。");
-  } finally {
-    setIconUploading(false);
-  }
-};
+        setIconUploading(true);
+
+        const res = await fetch("http://localhost:8000/user/icon", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ icon_url: base64CroppedImage }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          alert("アイコン更新失敗: " + errData.detail);
+          return;
+        }
+
+        alert("アイコンを更新しました。ページを再読み込みします。");
+        window.location.reload();
+      } catch (err) {
+        console.error("アイコン更新失敗:", err);
+        alert("画像のアップロードに失敗しました。");
+      } finally {
+        setIconUploading(false);
+        setCropModalOpen(false);
+        setSelectedFile(null);
+      }
+    };
+  };
 
   if (loading) {
     return (
@@ -125,13 +188,15 @@ export default function MyRecipesList() {
 
   return (
     <div className="space-y-8">
-      {/* ✅ 編集機能（ユーザー名・アイコン） */}
+      {/* プロフィール編集 */}
       {user && (
         <div className="p-4 border rounded space-y-4">
           <h2 className="text-xl font-bold">プロフィール編集</h2>
 
           <div>
-            <label className="block font-semibold mb-1">現在のユーザー名:</label>
+            <label className="block font-semibold mb-1">
+              現在のユーザー名:
+            </label>
             <p className="mb-2">{user.user_name}</p>
             <input
               type="text"
@@ -173,7 +238,44 @@ export default function MyRecipesList() {
         </div>
       )}
 
-      {/* ✅ レシピ一覧 */}
+      {/* クロップモーダル */}
+      {cropModalOpen && selectedFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center z-50 p-4">
+          <div className="relative w-full max-w-md bg-white rounded-lg p-4">
+            <div style={{ position: "relative", width: "100%", height: 300 }}>
+              <Cropper
+                image={URL.createObjectURL(selectedFile)}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                onClick={() => {
+                  setCropModalOpen(false);
+                  setSelectedFile(null);
+                }}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleCropSave}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* レシピ一覧 */}
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
         <div className="text-center mb-12 max-w-4xl">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
@@ -187,7 +289,9 @@ export default function MyRecipesList() {
             {recipes.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🍳</div>
-                <p className="text-gray-500 text-lg">まだレシピがありません。</p>
+                <p className="text-gray-500 text-lg">
+                  まだレシピがありません。
+                </p>
                 <p className="text-gray-400 text-sm mt-2">
                   最初のレシピを投稿してみましょう！
                 </p>
@@ -230,7 +334,9 @@ export default function MyRecipesList() {
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.style.display = "none";
-                                target.nextElementSibling?.classList.remove("hidden");
+                                target.nextElementSibling?.classList.remove(
+                                  "hidden"
+                                );
                               }}
                             />
                           ) : null}
