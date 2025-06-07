@@ -114,6 +114,7 @@ export default function RecipeDetailPage() {
                       title={recipe.title}
                       country={recipe.country}
                       imageDescription={recipe.image_description}
+                      user_name={recipe.user_name}
                     />
 
                     {recipe.image_url && (
