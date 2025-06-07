@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from db.models import Recipe
+from db.models import Recipe, User
 from schemas.recipe import RecipeCreate, RecipeRead
+
 
 def get_recipes(db: Session):
     db_recipes = db.query(Recipe).all()
@@ -33,8 +34,9 @@ def get_recipe(db: Session, recipe_id: int):
         return RecipeRead(**recipe_dict)
     return None
 
-def create_recipe(db: Session, recipe: RecipeCreate):
+def create_recipe(db: Session, recipe: RecipeCreate, user: User):
     db_recipe = Recipe(
+        email=user.email,
         title=recipe.title,
         country=recipe.country,
         ingredients=",".join(recipe.ingredients), 
@@ -48,6 +50,7 @@ def create_recipe(db: Session, recipe: RecipeCreate):
     
     recipe_dict = {
         "id": db_recipe.id,
+        "email": db_recipe.email,
         "title": db_recipe.title,
         "country": db_recipe.country,
         "ingredients": db_recipe.ingredients.split(",") if db_recipe.ingredients else [],

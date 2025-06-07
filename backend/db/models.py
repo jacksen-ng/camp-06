@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, text
 from db.database import Base
 
 class User(Base):
@@ -10,6 +10,7 @@ class User(Base):
 class Recipe(Base):
     __tablename__ = "recipes"
     id = Column(Integer, primary_key=True, index=True)
+    email =Column(String, unique=True, index=True, nullable=False)
     title = Column(String, nullable=False)
     country = Column(String, nullable=False) #国名
     ingredients = Column(String, nullable=False) #材料

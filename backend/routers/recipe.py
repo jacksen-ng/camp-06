@@ -22,7 +22,7 @@ def save_recipe(recipe: RecipeCreate, db: Session = Depends(get_db), current_use
         HTTPException 400: レシピの保存に失敗した場合
         HTTPException 500: サーバーエラー
     """
-    return create_recipe(db, recipe)
+    return create_recipe(db, recipe, current_user)
 
 @router.get("/", response_model=List[RecipeRead])
 def read_recipes(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
