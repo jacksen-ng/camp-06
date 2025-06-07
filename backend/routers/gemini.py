@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from schemas.gemini import IngredientsRequest
+from services.auth import get_current_user
+from db.models import User
 
 #開発環境の時使うテスト（Geminiへの接続のテスト）
 try:
@@ -16,7 +18,7 @@ router = APIRouter(prefix="/gemini", tags=["gemini"])
 
 
 @router.post("/generate-recipe")
-async def generate_recipe_endpoint(req: IngredientsRequest):
+async def generate_recipe_endpoint(req: IngredientsRequest, current_user: User = Depends(get_current_user)):
     if not HAS_GEMINI:
         raise HTTPException(status_code=503, detail="Gemini API not configured")
     
