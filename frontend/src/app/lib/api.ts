@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface LoginData {
   email: string;
@@ -24,6 +24,7 @@ export interface Recipe {
   image_url?: string;
   image_description?: string;
   user_name?: string;
+  user_icon_url?: string;
 }
 
 export interface RecipeCreate {
@@ -51,9 +52,9 @@ export interface GenerateRecipeResponse {
 }
 
 function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   return {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
   };
 }
@@ -61,16 +62,16 @@ function getAuthHeaders(): HeadersInit {
 export const authApi = {
   async login(data: LoginData): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Login failed');
+      throw new Error(error.detail || "Login failed");
     }
 
     return response.json();
@@ -78,16 +79,16 @@ export const authApi = {
 
   async register(data: SignupData): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Registration failed');
+      throw new Error(error.detail || "Registration failed");
     }
 
     return response.json();
@@ -97,13 +98,13 @@ export const authApi = {
 export const recipeApi = {
   async getRecipes(): Promise<Recipe[]> {
     const response = await fetch(`${API_BASE_URL}/recipes/`, {
-      method: 'GET',
+      method: "GET",
       headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Failed to fetch recipes');
+      throw new Error(error.detail || "Failed to fetch recipes");
     }
 
     return response.json();
@@ -111,13 +112,13 @@ export const recipeApi = {
 
   async getRecipe(id: number): Promise<Recipe> {
     const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
-      method: 'GET',
+      method: "GET",
       headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Failed to fetch recipe');
+      throw new Error(error.detail || "Failed to fetch recipe");
     }
 
     return response.json();
@@ -125,14 +126,14 @@ export const recipeApi = {
 
   async createRecipe(data: RecipeCreate): Promise<Recipe> {
     const response = await fetch(`${API_BASE_URL}/recipes/`, {
-      method: 'POST',
+      method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Failed to create recipe');
+      throw new Error(error.detail || "Failed to create recipe");
     }
 
     return response.json();
@@ -140,28 +141,30 @@ export const recipeApi = {
 
   async deleteRecipe(id: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Failed to delete recipe');
+      throw new Error(error.detail || "Failed to delete recipe");
     }
   },
 };
 
 export const geminiApi = {
-  async generateRecipe(data: GenerateRecipeRequest): Promise<GenerateRecipeResponse> {
+  async generateRecipe(
+    data: GenerateRecipeRequest
+  ): Promise<GenerateRecipeResponse> {
     const response = await fetch(`${API_BASE_URL}/gemini/generate-recipe`, {
-      method: 'POST',
+      method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Failed to generate recipe');
+      throw new Error(error.detail || "Failed to generate recipe");
     }
 
     return response.json();

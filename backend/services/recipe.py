@@ -3,21 +3,30 @@ from db.models import Recipe, User
 from schemas.recipe import RecipeCreate, RecipeRead
 
 
-def get_recipes(db: Session):
-    db_recipes = db.query(Recipe, User).join(User, Recipe.email == User.email).all()
+def get_recipes(db):
+    # レシピとユーザーをJOIN
+    results = (
+        db.query(Recipe, User)
+        .join(User, Recipe.email == User.email)
+        .all()
+    )
     recipes = []
-    for db_recipe, user in db_recipes:
-        recipe_dict = {
-            "id": db_recipe.id,
-            "title": db_recipe.title,
-            "country": db_recipe.country,
-            "ingredients": db_recipe.ingredients.split(",") if db_recipe.ingredients else [],
-            "instructions": db_recipe.instructions,
-            "image_url": db_recipe.image_url,
-            "image_description": db_recipe.image_description,
-            "user_name": user.user_name
-        }
-        recipes.append(RecipeRead(**recipe_dict))
+    for recipe, user in results:
+        # ingredientsはカンマ区切りの場合は分割
+        ingredients = recipe.ingredients.split(",") if isinstance(recipe.ingredients, str) else recipe.ingredients
+        recipes.append(
+            RecipeRead(
+                id=recipe.id,
+                title=recipe.title,
+                country=recipe.country,
+                ingredients=ingredients,
+                instructions=recipe.instructions,
+                image_url=recipe.image_url,
+                image_description=recipe.image_description,
+                user_name=user.user_name,
+                user_icon_url=user.icon_url,
+            )
+        )
     return recipes
 
 def get_recipe(db: Session, recipe_id: int):
@@ -32,7 +41,8 @@ def get_recipe(db: Session, recipe_id: int):
             "instructions": db_recipe.instructions,
             "image_url": db_recipe.image_url,
             "image_description": db_recipe.image_description,
-            "user_name": user.user_name
+            "user_name": user.user_name,
+            "user_icon_url": user.icon_url,  # 追加
         }
         return RecipeRead(**recipe_dict)
     return None
@@ -60,7 +70,8 @@ def create_recipe(db: Session, recipe: RecipeCreate, user: User):
         "instructions": db_recipe.instructions,
         "image_url": db_recipe.image_url,
         "image_description": db_recipe.image_description,
-        "user_name": user.user_name
+        "user_name": user.user_name,
+        "user_icon_url": user.icon_url,  # 追加
     }
     return RecipeRead(**recipe_dict)
 

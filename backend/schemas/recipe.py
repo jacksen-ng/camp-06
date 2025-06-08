@@ -15,6 +15,8 @@ class RecipeCreate(RecipeBase):
 class RecipeRead(RecipeBase):
     id: int
     user_name: Optional[str] = None
+    user_name: Optional[str] = None
+    user_icon_url: Optional[str] = None
 
     class Config:
         from_attributes = True
