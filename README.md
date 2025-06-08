@@ -73,3 +73,47 @@ graph LR
 ## 技術スタック
 - Frontend: Next.js, TypeScript, Tailwind CSS
 - Backend: Python, FastAPI, Docker, Gemini API
+
+## 起動
+>[!NOTE]
+>MacOSを対象
+1. リポジトリをClone
+    ```bash
+    git clone https://github.com/jacksen-ng/camp-06.git
+    docker-compose up
+    ```
+2. フロントエンド
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+3. バックエンド
+    ```bash
+    cd backend
+    ```
+
+    `.env`ファイルを作る
+    ```bash 
+    GEMINI_API_KEY=xxx
+    SECRET_KEY=xxx
+    DATABASE_URL=xxx
+    ```
+
+    `venv`起動
+    ```python
+    python -m venv .venv
+    source .venv/bin/source
+    ```
+
+    `requirements.txt`のインストール
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    起動
+    ```python
+    python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    ```
+
+
