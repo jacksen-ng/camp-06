@@ -4,21 +4,21 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function Header() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const router = useRouter();
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isAuthenticated) {
-      router.push('/top-page');
+      router.push("/top-page");
     } else {
-      router.push('/');
+      router.push("/");
     }
   };
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    router.push("/");
   };
 
   return (
@@ -31,22 +31,39 @@ export default function Header() {
           >
             架空国家レシピ
           </button>
-          
+
           <div className="flex items-center gap-6">
             {isAuthenticated ? (
               <>
-              <Link
-                href="/recipes"
-                className="font-medium text-gray-700 hover:text-indigo-600 transition-colors"
-              >
-                レシピ
-              </Link>
+                <Link
+                  href="/recipes"
+                  className="font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+                >
+                  レシピ
+                </Link>
+
                 <button
                   onClick={handleLogout}
                   className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
                 >
                   ログアウト
                 </button>
+
+                {user?.icon && user.icon.startsWith("data:image/") ? (
+                  <img
+                    src={user.icon}
+                    alt="ユーザーアイコン"
+                    className="w-10 h-10 rounded-full border border-gray-300 shadow cursor-pointer"
+                    onClick={() => router.push("/mypage")}
+                  />
+                ) : (
+                  <div
+                    onClick={() => router.push("/mypage")}
+                    className="w-10 h-10 rounded-full border border-gray-300 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    <span className="text-sm text-gray-500">👤</span>
+                  </div>
+                )}
               </>
             ) : (
               <>
