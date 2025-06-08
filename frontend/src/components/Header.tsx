@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
+import Image from "next/image";
 
 export default function Header() {
   const { isAuthenticated, logout, user } = useAuth();
@@ -27,9 +28,16 @@ export default function Header() {
         <div className="flex justify-between items-center">
           <button
             onClick={handleLogoClick}
-            className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent hover:scale-105 transition-transform"
+            type="button"
+            className="cursor-pointer bg-none border-none p-0"
           >
-            架空国家レシピ
+            <Image
+              src="/logo-image.png"
+              alt="logo"
+              width={250}
+              height={80}
+              priority
+            />
           </button>
 
           <div className="flex items-center gap-6">
