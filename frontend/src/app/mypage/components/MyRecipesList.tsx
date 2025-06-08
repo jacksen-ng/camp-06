@@ -225,14 +225,22 @@ export default function MyRecipesList() {
             ) : (
               <p className="text-sm text-gray-500 mb-2">未設定</p>
             )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleIconChange}
-              disabled={iconUploading}
-            />
+
+            <div className="flex items-center gap-3 mt-2">
+              <label className="bg-indigo-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-indigo-700 transition">
+                画像を選択
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleIconChange}
+                  disabled={iconUploading}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
             {iconUploading && (
-              <p className="text-sm text-gray-500 mt-1">アップロード中...</p>
+              <p className="text-sm text-gray-500 mt-2">アップロード中...</p>
             )}
           </div>
         </div>
